@@ -1,3 +1,3 @@
-from .main import RegexMatch
+from .main import ReadingTime
 
-__all__ = ["RegexMatch"]
+__all__ = ["ReadingTime"]

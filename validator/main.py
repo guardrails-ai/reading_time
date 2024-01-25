@@ -4,6 +4,9 @@ from typing import Any, Callable, Dict, Optional
 
 import rstr
 
+from typing import Any, Dict
+
+from guardrails.logger import logger
 from guardrails.validator_base import (
     FailResult,
     PassResult,
@@ -13,59 +16,43 @@ from guardrails.validator_base import (
 )
 
 
-@register_validator(name="guardrails/regex_match", data_type="string")
-class RegexMatch(Validator):
-    """Validates that a value matches a regular expression.
+@register_validator(name="guardrails/reading_time", data_type="string")
+class ReadingTime(Validator):
+    """Validates that the a string can be read in less than a certain amount of
+    time.
 
     **Key Properties**
 
-    | Property                      | Description                       |
-    | ----------------------------- | --------------------------------- |
-    | Name for `format` attribute   | `regex_match`                     |
-    | Supported data types          | `string`                          |
-    | Programmatic fix              | Generate a string that matches the regular expression |
+    | Property                      | Description                         |
+    | ----------------------------- | ----------------------------------- |
+    | Name for `format` attribute   | `reading-time`                      |
+    | Supported data types          | `string`                            |
+    | Programmatic fix              | None                                |
 
     Args:
-        regex: Str regex pattern
-        match_type: Str in {"search", "fullmatch"} for a regex search or full-match option
-    """  # noqa
 
-    def __init__(
-        self,
-        regex: str,
-        match_type: Optional[str] = None,
-        on_fail: Optional[Callable] = None,
-    ):
-        # todo -> something forces this to be passed as kwargs and therefore xml-ized.
-        # match_types = ["fullmatch", "search"]
+        reading_time: The maximum reading time.
+    """
 
-        if match_type is None:
-            match_type = "fullmatch"
-        assert match_type in [
-            "fullmatch",
-            "search",
-        ], 'match_type must be in ["fullmatch", "search"]'
-
-        super().__init__(on_fail=on_fail, match_type=match_type, regex=regex)
-        self._regex = regex
-        self._match_type = match_type
+    def __init__(self, reading_time: int, on_fail: str = "fix"):
+        super().__init__(on_fail=on_fail, reading_time=reading_time)
+        self._max_time = reading_time
 
     def validate(self, value: Any, metadata: Dict) -> ValidationResult:
-        p = re.compile(self._regex)
-        """Validates that value matches the provided regular expression."""
-        # Pad matching string on either side for fix
-        # example if we are performing a regex search
-        str_padding = (
-            "" if self._match_type == "fullmatch" else rstr.rstr(string.ascii_lowercase)
+        logger.debug(
+            f"Validating {value} can be read in less than {self._max_time} seconds..."
         )
-        self._fix_str = str_padding + rstr.xeger(self._regex) + str_padding
 
-        if not getattr(p, self._match_type)(value):
+        # Estimate the reading time of the string
+        reading_time = len(value.split()) / 200 * 60
+        logger.debug(f"Estimated reading time {reading_time} seconds...")
+
+        if abs(reading_time - self._max_time) > 1:
+            logger.error(f"{value} took {reading_time} to read")
             return FailResult(
-                error_message=f"Result must match {self._regex}",
-                fix_value=self._fix_str,
+                error_message=f"String should be readable "
+                f"within {self._max_time} minutes.",
+                fix_value=value,
             )
-        return PassResult()
 
-    def to_prompt(self, with_keywords: bool = True) -> str:
-        return "results should match " + self._regex
+        return PassResult()
