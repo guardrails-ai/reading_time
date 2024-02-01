@@ -31,7 +31,7 @@ class ReadingTime(Validator):
 
     Args:
 
-        reading_time: The maximum reading time.
+        reading_time: The maximum reading time in minutes.
     """
 
     def __init__(self, reading_time: int, on_fail: str = "fix"):
@@ -40,14 +40,14 @@ class ReadingTime(Validator):
 
     def validate(self, value: Any, metadata: Dict) -> ValidationResult:
         logger.debug(
-            f"Validating {value} can be read in less than {self._max_time} seconds..."
+            f"Validating {value} can be read in less than {self._max_time} minutes..."
         )
 
         # Estimate the reading time of the string
-        reading_time = len(value.split()) / 200 * 60
-        logger.debug(f"Estimated reading time {reading_time} seconds...")
+        reading_time = len(value.split()) / 200
+        logger.debug(f"Estimated reading time {reading_time} minutes...")
 
-        if abs(reading_time - self._max_time) > 1:
+        if (reading_time - self._max_time) > 0:
             logger.error(f"{value} took {reading_time} to read")
             return FailResult(
                 error_message=f"String should be readable "

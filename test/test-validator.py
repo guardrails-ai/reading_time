@@ -2,11 +2,12 @@ from guardrails import Guard
 from pydantic import BaseModel, Field
 from validator import ReadingTime
 
+five_seconds = 5 / 60
 
 class ValidatorTestObject(BaseModel):
     test_val: str = Field(
         validators=[
-            ReadingTime(reading_time=5, on_fail="exception")
+            ReadingTime(reading_time=five_seconds, on_fail="exception")
         ]
     )
 
