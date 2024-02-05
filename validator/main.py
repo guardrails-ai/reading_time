@@ -52,7 +52,6 @@ class ReadingTime(Validator):
             return FailResult(
                 error_message=f"String should be readable "
                 f"within {self._max_time} minutes.",
-                fix_value=value,
             )
 
         return PassResult()
