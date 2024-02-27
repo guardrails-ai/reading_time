@@ -1,10 +1,4 @@
-import re
-import string
 from typing import Any, Callable, Dict, Optional
-
-import rstr
-
-from typing import Any, Dict
 
 from guardrails.logger import logger
 from guardrails.validator_base import (
@@ -25,33 +19,36 @@ class ReadingTime(Validator):
 
     | Property                      | Description                         |
     | ----------------------------- | ----------------------------------- |
-    | Name for `format` attribute   | `reading-time`                      |
+    | Name for `format` attribute   | `guardrails/reading_time`           |
     | Supported data types          | `string`                            |
     | Programmatic fix              | None                                |
 
     Args:
 
-        reading_time: The maximum reading time in minutes.
+        reading_time (int): The maximum reading time in minutes.
     """
 
-    def __init__(self, reading_time: int, on_fail: str = "fix"):
+    def __init__(self, reading_time: float, on_fail: Optional[Callable] = None):
         super().__init__(on_fail=on_fail, reading_time=reading_time)
-        self._max_time = reading_time
+        self._max_time = float(reading_time)
 
     def validate(self, value: Any, metadata: Dict) -> ValidationResult:
+        """Validation method for the ReadingTime validator."""
         logger.debug(
-            f"Validating {value} can be read in less than {self._max_time} minutes..."
+            f"Validating {value} can be read in less than {self._max_time} min."
         )
 
         # Estimate the reading time of the string
+        # Average human reading speed: 200 words / minute
         reading_time = len(value.split()) / 200
-        logger.debug(f"Estimated reading time {reading_time} minutes...")
+        logger.debug(f"Estimated reading time:  {reading_time} min.")
 
         if (reading_time - self._max_time) > 0:
-            logger.error(f"{value} took {reading_time} to read")
+            logger.error(f"{value} took {reading_time} min. to read")
             return FailResult(
                 error_message=f"String should be readable "
-                f"within {self._max_time} minutes.",
+                f"within {self._max_time} min. but took "
+                f"{reading_time} min. to read.",
             )
 
         return PassResult()
