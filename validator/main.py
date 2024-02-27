@@ -35,20 +35,20 @@ class ReadingTime(Validator):
     def validate(self, value: Any, metadata: Dict) -> ValidationResult:
         """Validation method for the ReadingTime validator."""
         logger.debug(
-            f"Validating {value} can be read in less than {self._max_time} min."
+            f"Validating {value} can be read in less than {round(self._max_time, 3)} min."
         )
 
         # Estimate the reading time of the string
         # Average human reading speed: 200 words / minute
         reading_time = len(value.split()) / 200
-        logger.debug(f"Estimated reading time:  {reading_time} min.")
+        logger.debug(f"Estimated reading time:  {round(reading_time, 3)} min.")
 
         if (reading_time - self._max_time) > 0:
-            logger.error(f"{value} took {reading_time} min. to read")
+            logger.error(f"{value} took {round(reading_time, 3)} min. to read")
             return FailResult(
                 error_message=f"String should be readable "
-                f"within {self._max_time} min. but took "
-                f"{reading_time} min. to read.",
+                f"within {round(self._max_time, 3)} min. but took "
+                f"{round(reading_time, 3)} min. to read.",
             )
 
         return PassResult()

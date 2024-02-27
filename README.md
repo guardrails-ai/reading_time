@@ -4,75 +4,54 @@
 | --- | --- |
 | Date of development | Feb 15, 2024 |
 | Validator type | Format |
-| Blog |  |
+| Blog | - |
 | License | Apache 2 |
 | Input/Output | Output |
 
 ## Description
 
-This validator ensures that any LLM generated text is less than some maximum expected reading time. The reading time estimation is done at 200 wpm.
+This validator ensures that any LLM generated text is readable within an expected reading time. The reading time estimation is done at 200 words / min.
 
 ## Installation
 
 ```bash
-$ guardrails hub install hub://guardrails/reading_time
+guardrails hub install hub://guardrails/reading_time
 ```
 
 ## Usage Examples
 
 ### Validating string output via Python
 
-In this example, we’ll use the validator to validate that an LLM description is under 2 minutes of reading time.
+In this example, we’ll use the validator to validate that an LLM description is under 5 seconds of reading time.
 
 ```python
 # Import Guard and Validator
 from guardrails.hub import ReadingTime
 from guardrails import Guard
 
-# Initialize Validator
-val = ReadingTime(
-    reading_time=2,
-    on_fail="fix"
-)
+FIVE_SECONDS = 5 / 60
+# Use the Guard with the validator
+guard = Guard().use(ReadingTime, reading_time=FIVE_SECONDS, on_fail="exception")
 
-# Setup Guard
-guard = Guard.from_string(
-    validators=[val, ...],
-)
+# Test passing response
+guard.validate("Azure is a cloud computing service created by Microsoft.")
 
-guard.parse("As short string")  # Validator passes
+try:
+    # Test failing response
+    guard.validate(
+        """
+        Azure is a cloud computing service created by Microsoft. It was first announced in 2008 and 
+        released in 2010. It is a cloud computing service that provides a range of services, 
+        including those for compute, analytics, storage, and networking. 
+        It can be used to build, deploy, and manage applications and services.
+        """
+    )
+except Exception as e:
+    print(e)
 ```
-
-### Validating JSON output via Python
-
-In this example, we’ll generate JSON about a pet, and validate that one of the JSON fields has reading time of under 2 minutes.
-
-```python
-# Import Guard and Validator
-from pydantic import BaseModel
-from guardrails.hub import ValidChoices
-from guardrails import Guard
-
-val = ReadingTime(
-    reading_time=2,
-    on_fail="fix"
-)
-
-# Create Pydantic BaseModel
-class PetInfo(BaseModel):
-    pet_name: str
-    pet_history: str = Field(validators=[val])
-
-# Create a Guard to check for valid Pydantic output
-guard = Guard.from_pydantic(output_class=PetInfo)
-
-# Run LLM output generating JSON through guard
-guard.parse("""
-{
-    "pet_name": "Caesar",
-    "pet_history": "This pet has been a very good boy for many years."
-}
-""")
+Output:
+```console
+Validation failed for field with errors: String should be readable within 0.083 min. but took 0.255 min. to read.
 ```
 
 ## API Reference
@@ -84,14 +63,14 @@ Initializes a new instance of the Validator class.
 
 **Parameters:**
 
-- **`reading_time`** _(int):_ The maximum reading time in minutes.
+- **`reading_time`** _(float):_ The maximum reading time in minutes.
 - **`on_fail`** *(str, Callable):* The policy to enact when a validator fails. If `str`, must be one of `reask`, `fix`, `filter`, `refrain`, `noop`, `exception` or `fix_reask`. Otherwise, must be a function that is called when the validator fails.
 
 </ul>
 
 <br>
 
-**`__call__(self, value, metadata={}) → ValidationOutcome`**
+**`__call__(self, value, metadata={}) → ValidationResult`**
 
 <ul>
 
