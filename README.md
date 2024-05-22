@@ -1,7 +1,6 @@
 ## Overview
 
 | Developed by | Guardrails AI |
-| --- | --- |
 | Date of development | Feb 15, 2024 |
 | Validator type | Format |
 | Blog | - |
@@ -10,7 +9,13 @@
 
 ## Description
 
+### Intended Use
 This validator ensures that any LLM generated text is readable within an expected reading time. The reading time estimation is done at 200 words / min.
+
+### Requirements
+
+* Dependencies:
+	- guardrails-ai>=0.4.0
 
 ## Installation
 
@@ -54,7 +59,7 @@ Output:
 Validation failed for field with errors: String should be readable within 0.083 min. but took 0.255 min. to read.
 ```
 
-## API Reference
+# API Reference
 
 **`__init__(self, reading_time, on_fail="noop")`**
 <ul>
