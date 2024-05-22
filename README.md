@@ -15,7 +15,7 @@ This validator ensures that any LLM generated text is readable within an expecte
 ### Requirements
 
 * Dependencies:
-	- guardrails-ai>=0.4.0
+    - guardrails-ai>=0.4.0
 
 ## Installation
 
