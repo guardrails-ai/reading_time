@@ -20,7 +20,7 @@ This validator ensures that any LLM generated text is readable within an expecte
 ## Installation
 
 ```bash
-guardrails hub install hub://guardrails/reading_time
+$ guardrails hub install hub://guardrails/reading_time
 ```
 
 ## Usage Examples
@@ -75,7 +75,7 @@ Initializes a new instance of the Validator class.
 
 <br>
 
-**`__call__(self, value, metadata={}) → ValidationResult`**
+**`__call__(self, value, metadata={}) -> ValidationResult`**
 
 <ul>
 
